@@ -25,7 +25,7 @@ set "FIRST_RUN=0"
 @rem * Current directory accessible?
 @rem ***************************************************************************
 pushd "%SCRIPT_DIR%" || (
-    echo ERROR: Could not access the script directory.
+    echo.ERROR: Could not access the script directory [%SCRIPT_DIR%].
     exit /b 1
 )
 
@@ -34,16 +34,10 @@ pushd "%SCRIPT_DIR%" || (
 @rem ***************************************************************************
 if not exist "%VENV_PYTHON%" (
     set "FIRST_RUN=1"
-    echo Creating virtual environment "%VENV_NAME%"...
+    echo.Creating virtual environment [%VENV_NAME%]...
     call %PYTHON_COMMAND% -m venv "%VENV_DIR%"
     if errorlevel 1 (
-        echo ERROR: Could not create the virtual environment.
-        popd
-        exit /b 1
-    )
-
-    if not exist "%REQUIREMENTS_PATH%" (
-        echo ERROR: Requirements file not found: "%REQUIREMENTS_FILE%"
+        echo.ERROR: Could not create the virtual environment [%VENV_NAME%].
         popd
         exit /b 1
     )
@@ -54,7 +48,7 @@ if not exist "%VENV_PYTHON%" (
 @rem ***************************************************************************
 call "%ACTIVATE_SCRIPT%"
 if errorlevel 1 (
-    echo ERROR: Could not activate the virtual environment.
+    echo.ERROR: Could not activate the virtual environment [%VENV_NAME%].
     popd
     exit /b 1
 )
@@ -63,12 +57,16 @@ if errorlevel 1 (
 @rem * Install requirements after first run
 @rem ***************************************************************************
 if "%FIRST_RUN%"=="1" (
-    echo Installing modules from "%REQUIREMENTS_FILE%"...
-    python -m pip install -r "%REQUIREMENTS_PATH%"
-    if errorlevel 1 (
-        echo ERROR: Could not install the required modules.
-        popd
-        exit /b 1
+    if exist "%REQUIREMENTS_PATH%" (
+        echo.Installing modules from [%REQUIREMENTS_FILE%]...
+        python -m pip install -r "%REQUIREMENTS_PATH%"
+        if errorlevel 1 (
+            echo.ERROR: Could not install the required modules from [%REQUIREMENTS_FILE%].
+            popd
+            exit /b 1
+        )
+    ) else (
+        echo.INFO: No requirements file [%REQUIREMENTS_FILE%] found.
     )
 )
 
@@ -76,12 +74,12 @@ if "%FIRST_RUN%"=="1" (
 @rem * Install requirements after first run
 @rem ***************************************************************************
 if not exist "%PROGRAM_PATH%" (
-    echo ERROR: Program not found: "%PROGRAM%"
+    echo.ERROR: Program [%PROGRAM%] not found.
     popd
     exit /b 1
 )
 
-echo Starting "%PROGRAM%"...
+echo.Starting [%PROGRAM%]...
 python "%PROGRAM_PATH%"
 set "PROGRAM_EXIT_CODE=%errorlevel%"
 
