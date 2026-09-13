@@ -48,3 +48,4 @@ class Config(MDO):
     def setup(self) -> None:
         self.add("debug", "active", False)
         self.add("logging", "loglevel", "INFO")
+        self.add("app", "collection_root", str(self.get_app_dir() / Path("collection")))

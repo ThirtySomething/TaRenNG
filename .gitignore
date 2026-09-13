@@ -68,5 +68,6 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
+/collection
 /tarenng.json
 /tarenng.log
