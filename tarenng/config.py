@@ -33,13 +33,17 @@ class Config(MDO):
         return self.get_app_dir() / f"{self.APP_NAME}.json"
 
     def get_app_dir(self) -> Path:
-        if getattr(sys, "frozen", False):
+        if self.is_frozen():
             return Path(sys.executable).resolve().parent
         else:
             return Path(__file__).resolve().parent.parent
 
     def get_app_logger(self) -> Logger:
         return self._logger
+
+    def is_frozen(self) -> bool:
+        """Return whether the application is running from a PyInstaller bundle."""
+        return bool(getattr(sys, "frozen", False))
 
     def setup(self) -> None:
         self.add("debug", "active", False)

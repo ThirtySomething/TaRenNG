@@ -9,7 +9,7 @@ from tarenng import Config, TaRenNG
 if __name__ == "__main__":
     config: Config = Config()
     config_file: Path = config.get_app_config()
-    if not config_file.exists():
+    if not config_file.exists() or not config.is_frozen():
         config.save()
     applogger: logging.Logger = config.get_app_logger()
     applogger.info("Operating system: [%s]", platform.uname())
