@@ -6,15 +6,21 @@ from zipfile import Path
 
 from tarenng import Config, TaRenNG
 
+
+def log_startup_info(config: Config) -> None:
+    applogger: logging.Logger = config.get_app_logger()
+    applogger.info(f"Operating system [{platform.uname()}]")
+    applogger.info(f"Python version [{sys.version}]")
+    applogger.info(f"User [{getpass.getuser()}] runs [{config.APP_NAME}] with the following settings:")
+    applogger.info(f"Logger [{applogger.name}]")
+    applogger.info(config)
+
+
 if __name__ == "__main__":
     config: Config = Config()
     config_file: Path = config.get_app_config()
     if not config_file.exists() or not config.is_frozen():
         config.save()
-    applogger: logging.Logger = config.get_app_logger()
-    applogger.info("Operating system: [%s]", platform.uname())
-    applogger.info("Python version: [%s]", sys.version)
-    applogger.info("User [%s] runs [%s] with the following settings:", getpass.getuser(), config.APP_NAME)
-    applogger.info(config)
+    log_startup_info(config)
     program: TaRenNG = TaRenNG(config)
     program.process()

@@ -8,10 +8,10 @@ class FSTool:
 
     def __init__(self, config: Config) -> None:
         self._config: Config = config
-        self.logger = logging.getLogger(f"{self._config.APP_NAME}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
     def ensure_folder(self, folder: Path) -> bool:
         if not folder.exists():
-            self.logger.info(f"Creating folder [{folder}]")
+            self.logger.debug(f"Creating folder [{folder}]")
             folder.mkdir(parents=True, exist_ok=True)
         return folder.exists() and folder.is_dir()
