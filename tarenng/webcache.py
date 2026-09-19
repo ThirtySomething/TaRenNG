@@ -14,7 +14,8 @@ class WebCache:
     SECONDS_PER_DAY: float = 86400.0  # Number of seconds in a day
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
+        self._logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
+        self._data: str | None = None
 
     def _calculate_cache_age_in_days(self, cache_file: Path) -> int:
         cache_age_in_seconds: float = time.time() - cache_file.stat().st_mtime
@@ -28,13 +29,17 @@ class WebCache:
 
     def _is_cache_valid(self, cache_file: Path, max_age: int) -> bool:
         if not cache_file.exists():
-            self.logger.debug(f"Cache-file [{cache_file}] does not exist.")
+            self._logger.debug(f"Cache-file [{cache_file}] does not exist.")
             return False
         cache_age_in_days = self._calculate_cache_age_in_days(cache_file)
         if cache_age_in_days <= max_age:
+            self._set_cache_data(cache_file)
             return True
-        self.logger.debug(f"Cache-file [{cache_file}] is outdated ({cache_age_in_days} > {max_age} days).")
+        self._logger.debug(f"Cache-file [{cache_file}] is outdated ({cache_age_in_days} > {max_age} days).")
         return False
+
+    def _set_cache_data(self, cache_file: Path) -> None:
+        self._data = cache_file.read_text(encoding="utf-8")
 
     def _update_cache_file(self, url_src: str, agent: str, cache_file: Path) -> bool:
         headers = {"User-Agent": agent}
@@ -42,11 +47,15 @@ class WebCache:
             response = requests.get(url_src, headers=headers)
             response.raise_for_status()
             cache_file.write_text(response.text, encoding="utf-8")
-            self.logger.info(f"Cache-file [{cache_file}] updated successfully.")
+            self._set_cache_data(cache_file)
+            self._logger.info(f"Cache-file [{cache_file}] updated successfully.")
         except requests.RequestException as ex:
-            self.logger.error(f"Failed to update cache-file [{cache_file}]: {ex}")
+            self._logger.error(f"Failed to update cache-file [{cache_file}]: {ex}")
             return False
         return True
+
+    def get_data(self) -> str | None:
+        return self._data
 
     def update(self, url_src: str, agent: str, cache_file_raw: Path, max_age: int) -> bool:
         cache_file: Path = self._get_cache_file_name(url_src, cache_file_raw)
