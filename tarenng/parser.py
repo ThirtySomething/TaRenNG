@@ -20,42 +20,47 @@ class Parser:
         ("\u2013", "-"),
         ("?", ""),
         (" /", " - "),
+        (":", "-"),
     ]
 
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
+    def _get_element_by_number(self, dataraw: bs4.element.Tag, number: int) -> str:
+        cells: list[bs4.element.Tag] = dataraw.find_all("td")
+        result = cells[number].get_text().strip()
+        return result
+
     def _get_episode_broadcast_station(self, dataraw: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            result = cells[2].get_text()
+            result = self._get_element_by_number(dataraw, 2)
             for original, replacement in Parser.INVALID_REPLACEMENTS:
                 result = result.replace(original, replacement)
+            result = result.strip()
         except Exception as ex:
-            self._logger.exception(f"Exception parsing commissioners: [{ex}]")
+            self._logger.exception(f"Exception parsing broadcast station: [{ex}]")
         return result
 
     def _get_episode_case_number(self, dataraw: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            result = cells[5].get_text()
+            result = self._get_element_by_number(dataraw, 5)
             result = re.sub(Parser.RE_CASE_NUMBER_SUFFIX, "", result)
-            result = int(result.strip())
+            result = int(result)
         except Exception as ex:
-            self._logger.exception(f"Exception parsing episode id: [{ex}]")
+            self._logger.exception(f"Exception parsing case number: [{ex}]")
         return result
 
     def _get_episode_commissioners(self, dataraw: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            result = cells[4].get_text()
+            result = self._get_element_by_number(dataraw, 4)
             result = re.sub(Parser.RE_GUEST_APPEARANCE, "", result).strip()
             for original, replacement in Parser.INVALID_REPLACEMENTS:
                 result = result.replace(original, replacement)
+            result = result.strip()
         except Exception as ex:
             self._logger.exception(f"Exception parsing commissioners: [{ex}]")
         return result
@@ -63,9 +68,8 @@ class Parser:
     def _get_episode_id(self, dataraw: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            result = cells[0].get_text()
-            result = int(result.strip())
+            result = self._get_element_by_number(dataraw, 0)
+            result = int(result)
         except Exception as ex:
             self._logger.exception(f"Exception parsing episode id: [{ex}]")
         return result
@@ -73,9 +77,7 @@ class Parser:
     def _get_episode_title(self, dataraw: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            result = cells[1].get_text()
-            result = result.strip()
+            result = self._get_element_by_number(dataraw, 1)
             result = re.sub(Parser.RE_REMARK, "", result).strip()
             for original, replacement in Parser.INVALID_REPLACEMENTS:
                 result = result.replace(original, replacement)
@@ -87,8 +89,7 @@ class Parser:
     def _get_episode_year(self, dataraw: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
-            cells: list[bs4.element.Tag] = dataraw.find_all("td")
-            date_value: str = cells[3].get_text()
+            date_value: str = self._get_element_by_number(dataraw, 3)
             year_match: re.Match[str] | None = re.search(Parser.RE_YEAR, date_value)
             if year_match is not None:
                 result = int(year_match.group())
@@ -105,11 +106,6 @@ class Parser:
         result._case_number = self._get_episode_case_number(dataraw)
         result._broadcast_station = self._get_episode_broadcast_station(dataraw)
         result._year = self._get_episode_year(dataraw)
-
-        self._logger.debug(f"Episode [{result}]")
-
-        # self._year: int | None = None
-        # self._status: EpisodeStatus = EpisodeStatus.ES_UNKNOWN
 
         return result
 

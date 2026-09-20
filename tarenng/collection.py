@@ -23,17 +23,17 @@ class Collection:
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._episodelist: EpisodeList = EpisodeList(config)
+        self._fsTool: FSTool = FSTool(config)
         self._logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
     def ensure_folders(self) -> bool:
         collection_root: Path = self._config.get_app_collection_root()
-        fsTool: FSTool = FSTool(self._config)
         if not collection_root.exists():
             self._logger.error(f"Collection-root [{collection_root}] does not exist!")
             return False
         for folder in Collection.FOLDER_LIST_ALL:
             folder_path: Path = collection_root / folder
-            if not fsTool.ensure_folder(folder_path):
+            if not self._fsTool.ensure_folder(folder_path):
                 self._logger.error(f"Collection-folder [{folder_path}] does not exist and could not be created!")
                 return False
         for ignore_folder in Collection.FOLDER_LIST_IGNORE:
@@ -57,4 +57,11 @@ class Collection:
             result = True
         except Exception as ex:
             self._logger.exception(f"Failure: [{ex}]")
+        return result
+
+    def has_downloads(self) -> bool:
+        collection_root: Path = self._config.get_app_collection_root()
+        folder2check: Path = collection_root / Collection.FOLDER_NAME_DOWNLOADS
+        excludelist: list[str] = [Collection.FILE_IGNORE.name]
+        result: bool = self._fsTool.has_files_in_folder(folder2check, excludelist)
         return result

@@ -36,3 +36,7 @@ class TaRenNG:
 
         if not self._collection.build_episode_list_from_cache(dataRaw):
             self._logger.error(f"Cannot build episode list from cache data")
+
+        if not self._collection.has_downloads():
+            self._logger.info(f"No downloads, nothing to do")
+            return
