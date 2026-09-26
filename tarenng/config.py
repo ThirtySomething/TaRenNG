@@ -6,18 +6,17 @@ from venv import logger
 
 from vendor.MDO import MDO
 
+from .defines import Defines
+
 
 class Config(MDO):
-    APP_NAME: str = "tarenng"
-    CACHE_AGE_DEFAULT: int = 6
-    PATH_COLLECTION_ROOT: Path = Path("collection")
 
     def __init__(self) -> None:
         super().__init__(self.get_app_config(), True)
         self._logger: Logger = self._setup_logger()
 
     def _setup_logger(self) -> logging.Logger:
-        log_file: Path = self.get_app_dir() / f"{self.APP_NAME}.log"
+        log_file: Path = self.get_app_dir() / f"{Defines.APP_NAME}.log"
         applogger: Logger = logging.getLogger(__package__)
         if applogger.hasHandlers():
             return applogger
@@ -32,7 +31,7 @@ class Config(MDO):
         return Path(self.value_get("app", "collection_root"))
 
     def get_app_config(self) -> Path:
-        return self.get_app_dir() / f"{self.APP_NAME}.json"
+        return self.get_app_dir() / f"{Defines.APP_NAME}.json"
 
     def get_app_dir(self) -> Path:
         if self.is_frozen():
@@ -44,7 +43,7 @@ class Config(MDO):
         return self._logger
 
     def get_cache_age(self) -> int:
-        age: int = Config.CACHE_AGE_DEFAULT
+        age: int = Defines.CACHE_AGE_DEFAULT
         age_raw = self.value_get("app", "cache_age")
         if isinstance(age_raw, int):
             age = age_raw
@@ -52,7 +51,7 @@ class Config(MDO):
             try:
                 age = int(age_raw)
             except (ValueError, TypeError):
-                self._logger.warning(f"Invalid cache_age value [{age_raw}] configured, using default value [{Config.CACHE_AGE_DEFAULT}].")
+                self._logger.warning(f"Invalid cache_age value [{age_raw}] configured, using default value [{Defines.CACHE_AGE_DEFAULT}].")
         return age
 
     def get_cache_file(self) -> Path:
@@ -72,9 +71,9 @@ class Config(MDO):
         return bool(getattr(sys, "frozen", False))
 
     def setup(self) -> None:
-        self.add("app", "cache_age", self.CACHE_AGE_DEFAULT)
-        self.add("app", "cache_file", str(self.get_app_dir() / self.PATH_COLLECTION_ROOT / f"{self.APP_NAME}.html"))
-        self.add("app", "collection_root", str(self.get_app_dir() / self.PATH_COLLECTION_ROOT))
+        self.add("app", "cache_age", Defines.CACHE_AGE_DEFAULT)
+        self.add("app", "cache_file", str(self.get_app_dir() / Defines.PATH_COLLECTION_ROOT / f"{Defines.APP_NAME}.html"))
+        self.add("app", "collection_root", str(self.get_app_dir() / Defines.PATH_COLLECTION_ROOT))
         self.add("app", "scraper_agent", "TaRenNG/0.0 (https://github.com/ThirtySomething/TaRenNG/) generic-library/0.0")
         self.add("app", "scraper_source", "https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen")
         self.add("logging", "loglevel", "info")

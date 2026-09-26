@@ -4,14 +4,14 @@ import platform
 import sys
 from zipfile import Path
 
-from tarenng import Config, TaRenNG
+from tarenng import Config, Defines, TaRenNG
 
 
 def log_startup_info(config: Config) -> None:
     applogger: logging.Logger = config.get_app_logger()
     applogger.info(f"Operating system [{platform.uname()}]")
     applogger.info(f"Python version [{sys.version}]")
-    applogger.info(f"User [{getpass.getuser()}] runs [{config.APP_NAME}] with the following settings:")
+    applogger.info(f"User [{getpass.getuser()}] runs [{Defines.APP_NAME}] with the following settings:")
     applogger.info(f"Logger [{applogger.name}]")
     applogger.info(config)
 

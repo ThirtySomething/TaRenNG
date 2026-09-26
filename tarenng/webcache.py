@@ -1,28 +1,26 @@
 import hashlib
 import logging
 import time
+from logging import Logger
 from pathlib import Path
 
 import requests
 
-from .config import Config
+from .defines import Defines
 
 
 class WebCache:
 
-    URL_HASH_LENGTH: int = 8  # Length of MD5 hash used in cache filename
-    SECONDS_PER_DAY: float = 86400.0  # Number of seconds in a day
-
     def __init__(self) -> None:
-        self._logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
+        self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
         self._data: str | None = None
 
     def _calculate_cache_age_in_days(self, cache_file: Path) -> int:
         cache_age_in_seconds: float = time.time() - cache_file.stat().st_mtime
-        return int(cache_age_in_seconds / WebCache.SECONDS_PER_DAY)
+        return int(cache_age_in_seconds / Defines.SECONDS_PER_DAY)
 
     def _get_cache_file_name(self, url_src: str, cache_file: Path) -> Path:
-        url_hash: str = hashlib.md5(url_src.encode()).hexdigest()[: WebCache.URL_HASH_LENGTH]
+        url_hash: str = hashlib.md5(url_src.encode()).hexdigest()[: Defines.URL_HASH_LENGTH]
         cache_stem: str = cache_file.stem
         cache_filename: str = f"{cache_stem}_{url_hash}.html"
         return cache_file.parent / cache_filename

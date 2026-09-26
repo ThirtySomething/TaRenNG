@@ -1,67 +1,106 @@
 import logging
+from logging import Logger
 from pathlib import Path
 
 import bs4
 
 from .config import Config
+from .defines import Defines
 from .episode import Episode
 from .episode_list import EpisodeList
+from .episode_state import EpisodeState
 from .fstool import FSTool
+from .movie import Movie
+from .movie_list import MovieList
 from .parser import Parser
 
 
 class Collection:
-    FILE_IGNORE: Path = Path(".ignore")
-    FOLDER_NAME_DOWNLOADS: Path = Path("downloads")
-    FOLDER_NAME_SEEN: Path = Path("seen")
-    FOLDER_NAME_TRASH: Path = Path(".trash")
-    FOLDER_NAME_UNSEEN: Path = Path("unseen")
-
-    FOLDER_LIST_ALL: list[Path] = [FOLDER_NAME_DOWNLOADS, FOLDER_NAME_SEEN, FOLDER_NAME_TRASH, FOLDER_NAME_UNSEEN]
-    FOLDER_LIST_IGNORE: list[Path] = [FOLDER_NAME_DOWNLOADS, FOLDER_NAME_SEEN, FOLDER_NAME_TRASH]
-
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._episodelist: EpisodeList = EpisodeList(config)
-        self._fsTool: FSTool = FSTool(config)
-        self._logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
+        self._movielist: MovieList = MovieList(config)
+        self._fstool: FSTool = FSTool(config)
+        self._parser: Parser = Parser(config)
+        self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
-    def ensure_folders(self) -> bool:
-        collection_root: Path = self._config.get_app_collection_root()
+    def ensure_folders(self, collection_root: Path) -> bool:
+        # Check for existence of root folder
         if not collection_root.exists():
-            self._logger.error(f"Collection-root [{collection_root}] does not exist!")
             return False
-        for folder in Collection.FOLDER_LIST_ALL:
+        # Ensure all required folders exists
+        for folder in Defines.FOLDER_LIST_ALL:
             folder_path: Path = collection_root / folder
-            if not self._fsTool.ensure_folder(folder_path):
-                self._logger.error(f"Collection-folder [{folder_path}] does not exist and could not be created!")
+            if not self._fstool.ensure_folder(folder_path):
+                self._logger.error(f"Collection-folder [{folder_path}] does not exist and cannot be created!")
                 return False
-        for ignore_folder in Collection.FOLDER_LIST_IGNORE:
-            ignore_folder_file: Path = collection_root / ignore_folder / Collection.FILE_IGNORE
+        # Mark some folders with .ignore file to exclude from e. g. Jellyfin
+        for ignore_folder in Defines.FOLDER_LIST_IGNORE:
+            ignore_folder_file: Path = collection_root / ignore_folder / Defines.FILE_IGNORE
             ignore_folder_file.touch(exist_ok=True)
             if not ignore_folder_file.exists():
                 self._logger.error(f"Collection-ignore-file [{ignore_folder_file}] does not exist and could not be created!")
                 return False
         return True
 
-    def build_episode_list_from_cache(self, dataraw: str) -> bool:
+    def build_episode_list_from_html(self, htmldata: str) -> bool:
         result: bool = False
         try:
-            parser: Parser = Parser(self._config)
+            # Ensure empty episode list
             self._episodelist.list_initialize()
-            episodes_raw: list[bs4.element.Tag] = parser.get_episode_data_raw(dataraw)
+            # Get list of table rows of html page
+            episodes_raw: list[bs4.element.Tag] = self._parser.get_episode_table_rows(htmldata)
             for episode_raw in episodes_raw:
-                episode: Episode | None = parser.get_episode_data(episode_raw)
+                # Parse html table row to Episode
+                episode: Episode | None = self._parser.get_episode_from_table_row(episode_raw)
                 if episode is not None:
+                    # Add episode
                     self._episodelist.list_element_add(episode)
             result = True
         except Exception as ex:
-            self._logger.exception(f"Failure: [{ex}]")
+            self._logger.exception(f"Exception: [{ex}]")
         return result
 
-    def has_downloads(self) -> bool:
-        collection_root: Path = self._config.get_app_collection_root()
-        folder2check: Path = collection_root / Collection.FOLDER_NAME_DOWNLOADS
-        excludelist: list[str] = [Collection.FILE_IGNORE.name]
-        result: bool = self._fsTool.has_files_in_folder(folder2check, excludelist)
+    def build_movie_list_from_folders(self, collection_root: Path) -> bool:
+        result: bool = False
+        try:
+            for episode_state, folder_path in Defines.FOLDER_LIST_MOVIE.items():
+                self._logger.debug(f"Working on folder [{folder_path}]")
+                movielist: list[Movie] = self._fstool.get_episodes((collection_root / folder_path), episode_state)
+                self._movielist.append(movielist)
+            result = True
+        except Exception as ex:
+            self._logger.exception(f"Exception: [{ex}]")
+        return result
+
+    def fix_collection_naming(self, collection_root: Path) -> bool:
+        result: bool = False
+        try:
+            for movie in self._movielist.get_movie_list():
+                if movie.get_episodestate() == EpisodeState.ES_TRASHED:
+                    continue
+                episode_from_movie: Episode = self._parser.get_episode_from_movie(movie)
+                episodeid: int | None = episode_from_movie.get_episodeid()
+                if episodeid is None:
+                    self._logger.warning(f"Invalid episode number [{movie}]")
+                    continue
+                episode: Episode | None = self._episodelist.get_episode_by_id(episodeid)
+                if episode is None:
+                    self._logger.warning(f"Episode with number [{episode_from_movie._episodeid}] not found")
+                    continue
+                if not episode == episode_from_movie:
+                    folder: Path = Defines.FOLDER_LIST_MOVIE[movie.get_episodestate()]
+                    path_src: Path = collection_root / folder / movie.get_filename()
+                    path_dst: Path = collection_root / folder / str(episode)
+                    self._logger.info(f"rename [{path_src}] to [{path_dst}]")
+                    path_src.rename(path_dst)
+            result = True
+        except Exception as ex:
+            self._logger.exception(f"Exception: [{ex}]")
+        return result
+
+    def has_downloads(self, collection_root: Path) -> bool:
+        folder2check: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS
+        excludelist: list[str] = [Defines.FILE_IGNORE.name]
+        result: bool = self._fstool.has_files_in_folder(folder2check, excludelist)
         return result

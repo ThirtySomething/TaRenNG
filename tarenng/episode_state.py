@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class EpisodeStatus(Enum):
+class EpisodeState(Enum):
     ES_UNKNOWN = 0
     ES_DOWNLOADED = 1
     ES_UNSEEN = 2
