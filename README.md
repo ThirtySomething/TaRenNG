@@ -44,7 +44,7 @@ Example:
     "trash_age": 6
   },
   "LOGGING": {
-    "loglevel": "debug"
+    "loglevel": "info"
   }
 }
 ```
