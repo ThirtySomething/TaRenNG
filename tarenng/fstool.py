@@ -19,6 +19,22 @@ class FSTool:
             folder.mkdir(parents=True, exist_ok=True)
         return folder.exists() and folder.is_dir()
 
+    def get_downloads(self, collection_root: Path) -> list[Movie]:
+        result: list[Movie] = []
+        path_downloads: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS
+        if not path_downloads.exists():
+            self._logger.error(f"Downloadpath [{path_downloads}] does not exist")
+            return result
+        for entry in path_downloads.iterdir():
+            if entry.is_dir():
+                continue
+            if entry.name == Defines.FILE_IGNORE.name:
+                continue
+            movie: Movie = Movie(entry, EpisodeState.ES_DOWNLOADED)
+            result.append(movie)
+        self._logger.debug(f"{result}")
+        return result
+
     def get_episodes(self, folder: Path, episodestate: EpisodeState) -> list[Movie]:
         result: list[Movie] = []
         for data in folder.iterdir():

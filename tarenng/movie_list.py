@@ -13,5 +13,16 @@ class MovieList:
                 if isinstance(cur_element, Movie):
                     self._movies.append(cur_element)
 
+    def get_movie_by_name(self, moviename: str) -> Movie | None:
+        result: Movie | None = None
+        for movie in self._movies:
+            if moviename == movie.get_filename():
+                result = movie
+                break
+        return result
+
     def get_movie_list(self) -> list[Movie]:
         return self._movies
+
+    def list_initialize(self) -> None:
+        self._movies = []

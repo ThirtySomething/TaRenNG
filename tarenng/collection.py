@@ -13,16 +13,18 @@ from .fstool import FSTool
 from .movie import Movie
 from .movie_list import MovieList
 from .parser import Parser
+from .trash import Trash
 
 
 class Collection:
     def __init__(self, config: Config) -> None:
         self._config: Config = config
+        self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
         self._episodelist: EpisodeList = EpisodeList(config)
         self._movielist: MovieList = MovieList(config)
         self._fstool: FSTool = FSTool(config)
         self._parser: Parser = Parser(config)
-        self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
+        self._trash: Trash = Trash(config)
 
     def ensure_folders(self, collection_root: Path) -> bool:
         # Check for existence of root folder
@@ -104,3 +106,43 @@ class Collection:
         excludelist: list[str] = [Defines.FILE_IGNORE.name]
         result: bool = self._fstool.has_files_in_folder(folder2check, excludelist)
         return result
+
+    def initialize_list_episodes(self) -> None:
+        self._episodelist.list_initialize()
+
+    def initialize_list_movies(self) -> None:
+        self._movielist.list_initialize()
+
+    def rename_process(self, collection_root: Path) -> None:
+        downloads: list[Movie] = self._fstool.get_downloads(collection_root)
+        for download in downloads:
+            moviename: str = download.get_filename()
+            episode: Episode | None = self._episodelist.get_episode_by_filename(moviename)
+            if episode is None:
+                self._logger.warning(f"No episode found for [{download}], ignoring")
+                continue
+            self._logger.debug(f"Found [{episode}] for [{download}]")
+            # Rename downloaded file to new scheme
+            path_src: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS / Path(moviename)
+            path_dst: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS / str(episode)
+            path_src.rename(path_dst)
+            if not path_dst.exists():
+                self._logger.error(f"Failure during rename of [{path_src}]")
+                continue
+            movie: Movie | None = self._movielist.get_movie_by_name(str(episode))
+            path_src = collection_root / Defines.FOLDER_NAME_DOWNLOADS / str(episode)
+            if movie is None:
+                # Movie not in collection, move to unseen
+                path_dst = collection_root / Defines.FOLDER_NAME_UNSEEN / str(episode)
+                path_src.rename(path_dst)
+                if not path_dst.exists():
+                    self._logger.error(f"Failure during rename of [{path_src}]")
+            else:
+                if download.get_filesize() > movie.get_filesize():
+                    path_dst: Path = collection_root / Defines.FOLDER_LIST_MOVIE[movie.get_episodestate()] / str(episode)
+                    self._trash.trash(collection_root, movie)
+                    path_src.rename(path_dst)
+                    if not path_dst.exists():
+                        self._logger.error(f"Failure during rename of [{path_src}]")
+                else:
+                    self._trash.trash(collection_root, download)

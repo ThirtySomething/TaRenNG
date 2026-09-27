@@ -9,6 +9,7 @@ from .movie import Movie
 from .movie_list import MovieList
 from .parser import Parser
 from .tarenng import TaRenNG
+from .trash import Trash
 from .webcache import WebCache
 
-__all__ = ["Collection", "Config", "Defines", "Episode", "EpisodeList", "EpisodeState", "FSTool", "Movie", "MovieList", "Parser", "TaRenNG", "WebCache"]
+__all__ = ["Collection", "Config", "Defines", "Episode", "EpisodeList", "EpisodeState", "FSTool", "Movie", "MovieList", "Parser", "TaRenNG", "Trash", "WebCache"]

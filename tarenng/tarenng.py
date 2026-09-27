@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .collection import Collection
 from .config import Config
+from .trash import Trash
 from .webcache import WebCache
 
 
@@ -12,13 +13,14 @@ class TaRenNG:
         self._config: Config = config
         self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
         self._collection: Collection = Collection(self._config)
+        self._trash: Trash = Trash(config)
 
     def get_webcache(self) -> WebCache | None:
         webcache: WebCache = WebCache()
-        cache_age: int = self._config.get_cache_age()
-        cache_file: Path = self._config.get_cache_file()
-        scraper_agent: str = self._config.get_scraper_agent()
-        scraper_src: str = self._config.get_scraper_source()
+        cache_age: int = self._config.get_app_cache_age()
+        cache_file: Path = self._config.get_app_cache_file()
+        scraper_agent: str = self._config.get_app_scraper_agent()
+        scraper_src: str = self._config.get_app_scraper_source()
         if not webcache.update(scraper_src, scraper_agent, cache_file, cache_age):
             return None
         return webcache
@@ -45,11 +47,13 @@ class TaRenNG:
         self._logger.debug(f"Cached data: [{dataRaw[:300]}]...")
 
         # Build episode list from Wikipedia/cached page
+        self._collection.initialize_list_episodes()
         if not self._collection.build_episode_list_from_html(dataRaw):
             self._logger.error(f"Cannot build episode list from cache data")
             return
 
         # Build list of already existing movies in seen/unseen folder
+        self._collection.initialize_list_movies()
         if not self._collection.build_movie_list_from_folders(collection_root):
             self._logger.error(f"Cannot build movie list from folders")
             return
@@ -61,5 +65,9 @@ class TaRenNG:
 
         # If there are downloads available, process them
         if not self._collection.has_downloads(collection_root):
-            self._logger.info(f"No downloads, nothing to do")
-            return
+            self._logger.info(f"No downloads...")
+        else:
+            self._collection.rename_process(collection_root)
+
+        max_age: int = self._config.get_app_trash_age()
+        self._trash.cleanup(collection_root, max_age)

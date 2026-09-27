@@ -6,6 +6,7 @@ from .episode_state import EpisodeState
 class Defines:
     APP_NAME: str = "tarenng"
     CACHE_AGE_DEFAULT: int = 6
+    TRASH_AGE_DEFAULT: int = 6
     PATH_COLLECTION_ROOT: Path = Path("collection")
 
     FILE_IGNORE: Path = Path(".ignore")

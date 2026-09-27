@@ -27,6 +27,21 @@ class Config(MDO):
         applogger.addHandler(file_handler)
         return applogger
 
+    def get_app_cache_age(self) -> int:
+        age: int = Defines.CACHE_AGE_DEFAULT
+        age_raw = self.value_get("app", "cache_age")
+        if isinstance(age_raw, int):
+            age = age_raw
+        else:
+            try:
+                age = int(age_raw)
+            except (ValueError, TypeError):
+                self._logger.warning(f"Invalid cache_age value [{age_raw}] configured, using default value [{Defines.CACHE_AGE_DEFAULT}].")
+        return age
+
+    def get_app_cache_file(self) -> Path:
+        return Path(self.value_get("app", "cache_file"))
+
     def get_app_collection_root(self) -> Path:
         return Path(self.value_get("app", "collection_root"))
 
@@ -42,29 +57,26 @@ class Config(MDO):
     def get_app_logger(self) -> Logger:
         return self._logger
 
-    def get_cache_age(self) -> int:
-        age: int = Defines.CACHE_AGE_DEFAULT
-        age_raw = self.value_get("app", "cache_age")
+    def get_app_scraper_agent(self) -> str:
+        return str(self.value_get("app", "scraper_agent"))
+
+    def get_app_scraper_source(self) -> str:
+        return str(self.value_get("app", "scraper_source"))
+
+    def get_app_trash_age(self) -> int:
+        age: int = Defines.TRASH_AGE_DEFAULT
+        age_raw = self.value_get("app", "trash_age")
         if isinstance(age_raw, int):
             age = age_raw
         else:
             try:
                 age = int(age_raw)
             except (ValueError, TypeError):
-                self._logger.warning(f"Invalid cache_age value [{age_raw}] configured, using default value [{Defines.CACHE_AGE_DEFAULT}].")
+                self._logger.warning(f"Invalid trash_age value [{age_raw}] configured, using default value [{Defines.TRASH_AGE_DEFAULT}].")
         return age
-
-    def get_cache_file(self) -> Path:
-        return Path(self.value_get("app", "cache_file"))
 
     def get_logging_loglevel(self) -> str:
         return self.value_get("logging", "loglevel").upper()
-
-    def get_scraper_agent(self) -> str:
-        return str(self.value_get("app", "scraper_agent"))
-
-    def get_scraper_source(self) -> str:
-        return str(self.value_get("app", "scraper_source"))
 
     def is_frozen(self) -> bool:
         """Return whether the application is running from a PyInstaller bundle."""
@@ -76,4 +88,5 @@ class Config(MDO):
         self.add("app", "collection_root", str(self.get_app_dir() / Defines.PATH_COLLECTION_ROOT))
         self.add("app", "scraper_agent", "TaRenNG/0.0 (https://github.com/ThirtySomething/TaRenNG/) generic-library/0.0")
         self.add("app", "scraper_source", "https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen")
+        self.add("app", "trash_age", Defines.TRASH_AGE_DEFAULT)
         self.add("logging", "loglevel", "info")
