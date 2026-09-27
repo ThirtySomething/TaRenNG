@@ -14,7 +14,7 @@ Based on my experiences with the origin [TaRen][url_taren] and the AI crap I'm h
 The configuration is stored in `tarenng.json` next to the application. The file is
 created automatically on first startup.
 
-### `APP`
+### `app`
 
 | Option            | Default                                                                         | Description                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -23,8 +23,9 @@ created automatically on first startup.
 | `collection_root` | `<application directory>/collection`                                            | Root directory containing the movie collection. The program aborts if this directory does not exist. |
 | `scraper_agent`   | `TaRenNG/0.0 (https://github.com/ThirtySomething/TaRenNG/) generic-library/0.0` | User-agent string sent when retrieving scraper data.                                                 |
 | `scraper_source`  | `https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen`                         | URL used as the scraper source.                                                                      |
+| `trash_age`       | `6`                                                                             | Maximum age of items in the trash folder before they are cleaned up.                                 |
 
-### `LOGGING`
+### `logging`
 
 | Option     | Default | Description                                                                                   |
 | ---------- | ------- | --------------------------------------------------------------------------------------------- |
@@ -36,10 +37,11 @@ Example:
 {
   "APP": {
     "cache_age": 6,
-    "cache_file": "D:\\Workspaces\\tarenng\\collection\\tarenng.html",
-    "collection_root": "D:\\Workspaces\\tarenng\\collection",
+    "cache_file": "V:\\Tatort\\tarenng.html",
+    "collection_root": "V:\\Tatort",
     "scraper_agent": "TaRenNG/0.0 (https://github.com/ThirtySomething/TaRenNG/) generic-library/0.0",
-    "scraper_source": "https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen"
+    "scraper_source": "https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen",
+    "trash_age": 6
   },
   "LOGGING": {
     "loglevel": "debug"
