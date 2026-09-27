@@ -14,7 +14,7 @@ Based on my experiences with the origin [TaRen][url_taren] and the AI crap I'm h
 The configuration is stored in `tarenng.json` next to the application. The file is
 created automatically on first startup.
 
-### `app`
+### `APP`
 
 | Option            | Default                                                                         | Description                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -25,7 +25,7 @@ created automatically on first startup.
 | `scraper_source`  | `https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen`                         | URL used as the scraper source.                                                                      |
 | `trash_age`       | `6`                                                                             | Maximum age of items in the trash folder before they are cleaned up.                                 |
 
-### `logging`
+### `LOGGING`
 
 | Option     | Default | Description                                                                                   |
 | ---------- | ------- | --------------------------------------------------------------------------------------------- |
