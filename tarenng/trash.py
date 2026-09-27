@@ -10,13 +10,15 @@ from .movie import Movie
 
 
 class Trash:
+    ############################################################################
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
+    ############################################################################
     def cleanup(self, collection_root: Path, trash_age: int) -> int:
         deleted: int = 0
-        maxage: float = time.time() - trash_age * 86400
+        maxage: float = time.time() - trash_age * Defines.SECONDS_PER_DAY
         trashfolder: Path = collection_root / Defines.FOLDER_NAME_TRASH
         self._logger.info(
             "Delete files older than [%s] days from trash [%s]",
@@ -36,6 +38,7 @@ class Trash:
                 deleted = deleted + 1
         return deleted
 
+    ############################################################################
     def trash(self, collection_root: Path, movie: Movie | None) -> bool:
         result: bool = False
         if movie is None:

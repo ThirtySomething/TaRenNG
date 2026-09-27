@@ -17,6 +17,7 @@ from .trash import Trash
 
 
 class Collection:
+    ############################################################################
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
@@ -26,6 +27,7 @@ class Collection:
         self._parser: Parser = Parser(config)
         self._trash: Trash = Trash(config)
 
+    ############################################################################
     def ensure_folders(self, collection_root: Path) -> bool:
         # Check for existence of root folder
         if not collection_root.exists():
@@ -45,6 +47,7 @@ class Collection:
                 return False
         return True
 
+    ############################################################################
     def build_episode_list_from_html(self, htmldata: str) -> bool:
         result: bool = False
         try:
@@ -63,18 +66,24 @@ class Collection:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def build_movie_list_from_folders(self, collection_root: Path) -> bool:
         result: bool = False
         try:
             for episode_state, folder_path in Defines.FOLDER_LIST_MOVIE.items():
                 self._logger.debug(f"Working on folder [{folder_path}]")
-                movielist: list[Movie] = self._fstool.get_episodes((collection_root / folder_path), episode_state)
+                movielist: list[Movie] = self._fstool.get_movies((collection_root / folder_path), episode_state)
                 self._movielist.append(movielist)
             result = True
         except Exception as ex:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
+    def get_number_of_episodes(self) -> int:
+        return self._episodelist.get_number_of_episodes()
+
+    ############################################################################
     def fix_collection_naming(self, collection_root: Path) -> bool:
         result: bool = False
         try:
@@ -101,18 +110,22 @@ class Collection:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def has_downloads(self, collection_root: Path) -> bool:
         folder2check: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS
         excludelist: list[str] = [Defines.FILE_IGNORE.name]
         result: bool = self._fstool.has_files_in_folder(folder2check, excludelist)
         return result
 
+    ############################################################################
     def initialize_list_episodes(self) -> None:
         self._episodelist.list_initialize()
 
+    ############################################################################
     def initialize_list_movies(self) -> None:
         self._movielist.list_initialize()
 
+    ############################################################################
     def rename_process(self, collection_root: Path) -> None:
         downloads: list[Movie] = self._fstool.get_downloads(collection_root)
         for download in downloads:

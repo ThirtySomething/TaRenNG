@@ -8,8 +8,9 @@ from .fstool import FSTool
 from .movie import Movie
 from .movie_list import MovieList
 from .parser import Parser
+from .statistics import Statistics
 from .tarenng import TaRenNG
 from .trash import Trash
 from .webcache import WebCache
 
-__all__ = ["Collection", "Config", "Defines", "Episode", "EpisodeList", "EpisodeState", "FSTool", "Movie", "MovieList", "Parser", "TaRenNG", "Trash", "WebCache"]
+__all__ = ["Collection", "Config", "Defines", "Episode", "EpisodeList", "EpisodeState", "FSTool", "Movie", "MovieList", "Parser", "Statistics", "TaRenNG", "Trash", "WebCache"]

@@ -9,16 +9,19 @@ from .movie import Movie
 
 
 class FSTool:
+    ############################################################################
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
+    ############################################################################
     def ensure_folder(self, folder: Path) -> bool:
         if not folder.exists():
             self._logger.debug(f"Creating folder [{folder}]")
             folder.mkdir(parents=True, exist_ok=True)
         return folder.exists() and folder.is_dir()
 
+    ############################################################################
     def get_downloads(self, collection_root: Path) -> list[Movie]:
         result: list[Movie] = []
         path_downloads: Path = collection_root / Defines.FOLDER_NAME_DOWNLOADS
@@ -35,7 +38,8 @@ class FSTool:
         self._logger.debug(f"{result}")
         return result
 
-    def get_episodes(self, folder: Path, episodestate: EpisodeState) -> list[Movie]:
+    ############################################################################
+    def get_movies(self, folder: Path, episodestate: EpisodeState) -> list[Movie]:
         result: list[Movie] = []
         for data in folder.iterdir():
             if data.is_dir():
@@ -49,6 +53,7 @@ class FSTool:
             result.append(movie)
         return result
 
+    ############################################################################
     def has_files_in_folder(self, folder: Path, files2ignore: list[str]) -> bool:
         tmp_list: list[Path] = []
         for current_entry in folder.iterdir():

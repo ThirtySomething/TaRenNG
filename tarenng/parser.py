@@ -12,15 +12,18 @@ from .movie import Movie
 
 
 class Parser:
+    ############################################################################
     def __init__(self, config: Config) -> None:
         self._config: Config = config
         self._logger: Logger = logging.getLogger(f"{__package__}.{self.__class__.__name__}")
 
+    ############################################################################
     def _get_table_column_by_number(self, tablerow: bs4.element.Tag, number: int) -> str:
         cells: list[bs4.element.Tag] = tablerow.find_all("td")
         result = cells[number].get_text().strip()
         return result
 
+    ############################################################################
     def _get_broadcast_station(self, tablerow: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
@@ -32,6 +35,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def _get_case_number(self, tablerow: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
@@ -42,6 +46,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def _get_commissioners(self, tablerow: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
@@ -54,6 +59,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def _get_episodeid(self, tablerow: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
@@ -62,6 +68,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def _get_title(self, tablerow: bs4.element.Tag) -> str | None:
         result: str | None = None
         try:
@@ -74,6 +81,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def _get_year(self, tablerow: bs4.element.Tag) -> int | None:
         result: int | None = None
         try:
@@ -85,6 +93,7 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def get_episode_table_rows(self, htmldata: str) -> list[bs4.element.Tag]:
         result: list[bs4.element.Tag] = []
         try:
@@ -97,18 +106,18 @@ class Parser:
             self._logger.exception(f"Exception: [{ex}]")
         return result
 
+    ############################################################################
     def get_episode_from_table_row(self, tablerow: bs4.element.Tag) -> Episode | None:
         result: Episode = Episode()
-
         result.set_episodeid(self._get_episodeid(tablerow))
         result.set_title(self._get_title(tablerow))
         result.set_commissioners(self._get_commissioners(tablerow))
         result.set_case_number(self._get_case_number(tablerow))
         result.set_broadcast_station(self._get_broadcast_station(tablerow))
         result.set_year(self._get_year(tablerow))
-
         return result
 
+    ############################################################################
     def get_episode_from_movie(self, movie: Movie) -> Episode:
         result: Episode = Episode()
         movie_match: re.Match[str] | None = re.fullmatch(Defines.RE_EPISODE_FILENAME, movie.get_filename())
@@ -126,13 +135,11 @@ class Parser:
             result.set_broadcast_station(broadcast_station)
             result.set_year(year)
             return result
-
         episode_id_match: re.Match[str] | None = re.match(
             Defines.RE_EPISODE_ID_FROM_FILENAME,
             movie.get_filename(),
         )
         if episode_id_match is not None:
             result.set_episodeid(int(episode_id_match.group("episodeid")))
-
         self._logger.warning(f"Partially parsed movie filename [{movie._filename}]")
         return result
