@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
 
@@ -37,6 +38,24 @@ class Trash:
                 self._logger.info(f"Delete file [{trash_file}]")
                 deleted = deleted + 1
         return deleted
+
+    ############################################################################
+    def show_trash(self, collection_root: Path) -> None:
+        trashfolder: Path = collection_root / Defines.FOLDER_NAME_TRASH
+        self._logger.info(f"List files from trash [{trashfolder}]")
+        today: datetime = datetime.today()
+        # Loop over all in trash
+        for trash_file in trashfolder.iterdir():
+            filename: str = trash_file.name
+            # Check only files
+            if trash_file.is_file():
+                # Ignore marker for media servers
+                if trash_file.name == Defines.FILE_IGNORE.name:
+                    continue
+                # List file
+                file_mod_time: datetime = datetime.fromtimestamp(trash_file.stat().st_mtime)
+                age: timedelta = today - file_mod_time
+                self._logger.info(f"File [{filename}|{age.days:02d}]")
 
     ############################################################################
     def trash(self, collection_root: Path, movie: Movie | None) -> bool:

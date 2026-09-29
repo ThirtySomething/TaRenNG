@@ -68,5 +68,6 @@ class TaRenNG:
             self._collection.rename_process(collection_root)
         max_age: int = self._config.get_app_trash_age()
         self._trash.cleanup(collection_root, max_age)
+        self._trash.show_trash(collection_root)
         episode_count: int = self._collection.get_number_of_episodes()
         self._statistics.process(collection_root, episode_count)
