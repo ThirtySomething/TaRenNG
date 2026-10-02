@@ -158,4 +158,5 @@ class Collection:
                     if not path_dst.exists():
                         self._logger.error(f"Failure during rename of [{path_src}]")
                 else:
-                    self._trash.trash(collection_root, download)
+                    trashfile: Movie = Movie(path_src, EpisodeState.ES_DOWNLOADED)
+                    self._trash.trash(collection_root, trashfile)
