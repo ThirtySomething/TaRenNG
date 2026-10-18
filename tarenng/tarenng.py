@@ -62,10 +62,10 @@ class TaRenNG:
             self._logger.error(f"Failure during correcting names")
             return
         # If there are downloads available, process them
-        if not self._collection.has_downloads(collection_root):
-            self._logger.info(f"No downloads...")
-        else:
+        if self._collection.has_downloads(collection_root):
             self._collection.rename_process(collection_root)
+        else:
+            self._logger.info(f"No downloads...")
         max_age: int = self._config.get_app_trash_age()
         self._trash.cleanup(collection_root, max_age)
         self._trash.show_trash(collection_root)

@@ -147,6 +147,7 @@ class Collection:
             if movie is None:
                 # Movie not in collection, move to unseen
                 path_dst = collection_root / Defines.FOLDER_NAME_UNSEEN / str(episode)
+                self._logger.info(f"Move download to [{path_dst}]")
                 path_src.rename(path_dst)
                 if not path_dst.exists():
                     self._logger.error(f"Failure during rename of [{path_src}]")
@@ -154,6 +155,7 @@ class Collection:
                 if download.get_filesize() > movie.get_filesize():
                     path_dst: Path = collection_root / Defines.FOLDER_LIST_MOVIE[movie.get_episodestate()] / str(episode)
                     self._trash.trash(collection_root, movie)
+                    self._logger.info(f"Move download to [{path_dst}]")
                     path_src.rename(path_dst)
                     if not path_dst.exists():
                         self._logger.error(f"Failure during rename of [{path_src}]")
