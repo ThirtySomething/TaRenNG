@@ -10,6 +10,7 @@ class Defines:
     PATH_COLLECTION_ROOT: Path = Path("collection")
 
     FILE_IGNORE: Path = Path(".ignore")
+    FILE_MISSING: Path = Path(f"{APP_NAME}_missing.txt")
     FOLDER_NAME_DOWNLOADS: Path = Path("downloads")
     FOLDER_NAME_SEEN: Path = Path("seen")
     FOLDER_NAME_TRASH: Path = Path(".trash")

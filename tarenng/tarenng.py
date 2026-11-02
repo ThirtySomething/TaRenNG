@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .collection import Collection
 from .config import Config
+from .defines import Defines
 from .statistics import Statistics
 from .trash import Trash
 from .webcache import WebCache
@@ -69,5 +70,9 @@ class TaRenNG:
         max_age: int = self._config.get_app_trash_age()
         self._trash.cleanup(collection_root, max_age)
         self._trash.show_trash(collection_root)
+        # Write missing episodes next to the cache file
+        missing_file: Path = self._config.get_app_cache_file().parent / Defines.FILE_MISSING
+        if not self._collection.write_missing_list(collection_root, missing_file):
+            self._logger.error(f"Cannot write missing episodes to [{missing_file}]")
         episode_count: int = self._collection.get_number_of_episodes()
         self._statistics.process(collection_root, episode_count)

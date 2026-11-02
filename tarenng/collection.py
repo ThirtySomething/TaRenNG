@@ -1,4 +1,5 @@
 import logging
+import re
 from logging import Logger
 from pathlib import Path
 
@@ -74,6 +75,25 @@ class Collection:
                 self._logger.debug(f"Working on folder [{folder_path}]")
                 movielist: list[Movie] = self._fstool.get_movies((collection_root / folder_path), episode_state)
                 self._movielist.append(movielist)
+            result = True
+        except Exception as ex:
+            self._logger.exception(f"Exception: [{ex}]")
+        return result
+
+    ############################################################################
+    def write_missing_list(self, collection_root: Path, output_file: Path) -> bool:
+        result: bool = False
+        try:
+            # Read the current state of seen/unseen from disk, downloads are already processed at this point
+            existing_ids: set[int] = set()
+            for episode_state, folder_path in Defines.FOLDER_LIST_MOVIE.items():
+                for movie in self._fstool.get_movies((collection_root / folder_path), episode_state):
+                    id_match: re.Match[str] | None = re.match(Defines.RE_EPISODE_ID_FROM_FILENAME, movie.get_filename())
+                    if id_match is not None:
+                        existing_ids.add(int(id_match.group("episodeid")))
+            missing: list[Episode] = [episode for episode in self._episodelist.get_episode_list() if episode.get_episodeid() not in existing_ids]
+            output_file.write_text("".join(f"{episode}\n" for episode in missing), encoding="utf-8")
+            self._logger.info(f"Missing [{len(missing)}] episodes written to [{output_file}]")
             result = True
         except Exception as ex:
             self._logger.exception(f"Exception: [{ex}]")

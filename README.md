@@ -19,7 +19,7 @@ created automatically on first startup.
 | Option            | Default                                                                         | Description                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `cache_age`       | `6`                                                                             | Maximum age of the web cache in days before it is refreshed.                                         |
-| `cache_file`      | `<application directory>/collection/tarenng.html`                               | Path to the cached scraper response.                                                                 |
+| `cache_file`      | `<application directory>/collection/tarenng.html`                               | Path to the cached scraper response. The list of missing episodes is written to `tarenng_missing.txt` in the same folder. |
 | `collection_root` | `<application directory>/collection`                                            | Root directory containing the movie collection. The program aborts if this directory does not exist. |
 | `scraper_agent`   | `TaRenNG/0.0 (https://github.com/ThirtySomething/TaRenNG/) generic-library/0.0` | User-agent string sent when retrieving scraper data.                                                 |
 | `scraper_source`  | `https://de.wikipedia.org/wiki/Liste_der_Tatort-Folgen`                         | URL used as the scraper source.                                                                      |
