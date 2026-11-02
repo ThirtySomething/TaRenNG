@@ -17,6 +17,8 @@ class Statistics:
 
     ############################################################################
     def _percent(self, val_total: int, value: int) -> float:
+        if val_total == 0:
+            return 0.0
         result: float = 100.0 / val_total * value
         return result
 
