@@ -1,4 +1,5 @@
 import logging
+import re
 from logging import Logger
 
 from .config import Config
@@ -14,8 +15,9 @@ class EpisodeList:
 
     ############################################################################
     def get_episode_by_filename(self, filename: str) -> Episode | None:
-        if len(filename) >= 4 and filename[:4].isdigit():
-            return self.get_episode_by_id(int(filename[:4]))
+        episode_number = re.match(r"\d{1,4}", filename)
+        if episode_number:
+            return self.get_episode_by_id(int(episode_number.group()))
         result: Episode | None = None
         for current_episode in self._episodes:
             if current_episode.get_title().lower() in filename.lower():
